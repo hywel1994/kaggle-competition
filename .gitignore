@@ -5,6 +5,8 @@ __pycache__/
 
 *.csv
 *.h5
+*.model
+data/
 
 # C extensions
 *.so

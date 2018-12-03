@@ -11,10 +11,10 @@ import warnings
 warnings.filterwarnings("ignore")
 
 INPUT_SHAPE = (299,299,3)
-BATCH_SIZE = 10
+BATCH_SIZE = 5
 
-path_to_train = '/kaggle/input/train/'
-data = pd.read_csv('/kaggle/input/train.csv')
+path_to_train = 'data/train'
+data = pd.read_csv('data/train.csv')
 
 train_dataset_info = []
 for name, labels in zip(data['Id'], data['Target'].str.split(' ')):
@@ -85,7 +85,7 @@ fig, ax = plt.subplots(1,5,figsize=(25,5))
 for i in range(5):
     ax[i].imshow(images[i])
 print('min: {0}, max: {1}'.format(images.min(), images.max()))
-
+plt.show()
 
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential, load_model
@@ -155,6 +155,7 @@ def show_history(history):
     ax[0].legend()
     ax[1].legend()
     ax[2].legend()
+    plt.show()
 
 
 keras.backend.clear_session()
@@ -167,7 +168,7 @@ model.summary()
 
 
 checkpointer = ModelCheckpoint(
-    '/kaggle/working/InceptionResNetV2.model',
+    'working/InceptionResNetV2.model',
     verbose=2, save_best_only=True)
 
 train_generator = data_generator.create_train(
@@ -190,7 +191,8 @@ history = model.fit_generator(
     verbose=1,
     callbacks=[checkpointer])
 
-show_history(history)
+#show_history(history)
+
 
 train_generator = data_generator.create_train(
     train_dataset_info[train_ids.index], BATCH_SIZE, INPUT_SHAPE, augument=True)
@@ -214,24 +216,3 @@ history = model.fit_generator(
 
 
 show_history(history)
-
-model = load_model(
-    '/kaggle/working/InceptionResNetV2.model', 
-    custom_objects={'f1': f1})
-
-
-submit = pd.read_csv('../input/sample_submission.csv')
-
-
-predicted = []
-for name in tqdm(submit['Id']):
-    path = os.path.join('../input/test/', name)
-    image = data_generator.load_image(path, INPUT_SHAPE)
-    score_predict = model.predict(image[np.newaxis])[0]
-    label_predict = np.arange(28)[score_predict>=0.2]
-    str_predict_label = ' '.join(str(l) for l in label_predict)
-    predicted.append(str_predict_label)
-
-
-submit['Predicted'] = predicted
-submit.to_csv('submission.csv', index=False)
