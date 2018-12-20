@@ -40,9 +40,7 @@ model = load_model(
     'working/InceptionResNetV2.model', 
     custom_objects={'f1': f1})
 
-
 submit = pd.read_csv('data/sample_submission.csv')
-
 
 predicted = []
 for name in tqdm(submit['Id']):

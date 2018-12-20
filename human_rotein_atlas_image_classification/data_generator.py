@@ -1,7 +1,6 @@
 import os, sys, math
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from PIL import Image
 import cv2
 from imgaug import augmenters as iaa
@@ -11,8 +10,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 class data_generator:
-    def create_train(dataset_info, batch_size, shape, augument=True):
-        assert shape[2] == 3
+    def create_train(self, dataset_info, batch_size, shape, augument=True):
+        assert shape[2] == 4
         while True:
             random_indexes = np.random.choice(len(dataset_info), batch_size)
             batch_images = np.empty((batch_size, shape[0], shape[1], shape[2]))
@@ -27,23 +26,23 @@ class data_generator:
             yield batch_images, batch_labels
             
     
-    def load_image(path, shape):
+    def load_image(self, path, shape):
         R = np.array(Image.open(path+'_red.png'))
         G = np.array(Image.open(path+'_green.png'))
         B = np.array(Image.open(path+'_blue.png'))
         Y = np.array(Image.open(path+'_yellow.png'))
 
         image = np.stack((
-            R/2 + Y/2, 
-            G/2 + Y/2, 
-            B),-1)
+            G, 
+            R, 
+            B,
+            Y),-1)
         
         image = cv2.resize(image, (shape[0], shape[1]))
         image = np.divide(image, 255)
         return image  
                 
-            
-    def augment(image):
+    def augment(self, image):
         augment_img = iaa.Sequential([
             iaa.OneOf([
                 iaa.Affine(rotate=0),
