@@ -24,6 +24,9 @@ from keras.callbacks import Callback
 from keras import metrics
 from keras.optimizers import Adam 
 from keras import backend as K
+from keras import regularizers
+from keras.metrics import categorical_accuracy
+from keras.callbacks import LearningRateScheduler
 import tensorflow as tf
 import keras
 
@@ -37,7 +40,7 @@ warnings.filterwarnings("ignore")
 
 #parameter
 INPUT_SHAPE = [299,299]
-BATCH_SIZE = 32
+BATCH_SIZE = 8
 src_dir = 'data'
 path_to_train = 'data/train'
 data = pd.read_csv('data/train.csv')
@@ -59,36 +62,38 @@ train_ids, test_ids, train_targets, test_target = train_test_split(
 #     y_cat_train_5 = np.array([int(target in ee.split()) for ee in train_labels.Target.tolist()])
 #     y_cat_train_dic[icat] = y_cat_train_5
 
-def create_model(pretrain_model, input_shape, n_out):
-
+def create_model(pretrain_model,input_shape, n_out):
     input_tensor = Input(shape=input_shape+[4])
-    input_tensor = Conv2D(3, kernel_size=1, strides=1, padding='same', activation='tanh', kernel_regularizer=regularizers.l2(1e-4))(input_tensor)
-    bn = BatchNormalization()(input_tensor)
+    out = Conv2D(3, kernel_size=1, strides=1, padding='same', activation='tanh', kernel_regularizer=regularizers.l2(1e-4))(input_tensor)
+    bn = BatchNormalization()(out)
     x = pretrain_model(bn)
+    '''
     x = Conv2D(128, kernel_size=(1,1), activation='relu')(x)
     x = Flatten()(x)
     x = Dropout(0.5)(x)
     x = Dense(512, activation='relu')(x)
     x = Dropout(0.5)(x)
     output = Dense(n_out, activation='sigmoid')(x)
+    '''
+    output = Dense(28)(x)
+    output = Activation('sigmoid')(output)
     model = Model(input_tensor, output)
     
     return model
 
 keras.backend.clear_session()
-pretrain_model = InceptionResNetV2(include_top=False, weights='imagenet', input_shape=input_shape+[3])
 
-model = create_model(pretrain_model, input_shape=INPUT_SHAPE, n_out=28)
+pretrain_model = InceptionResNetV2(include_top=False, weights='imagenet', input_shape=INPUT_SHAPE+[3],pooling='avg',classes='avg')
+
+model = create_model(pretrain_model,input_shape=INPUT_SHAPE, n_out=28)
 
 model.summary()
 
-checkpointer = ModelCheckpoint( 'working/InceptionResNetV2.model', verbose=2, save_best_only=True)
+#checkpointer = ModelCheckpoint( 'working/InceptionResNetV2.model', verbose=2, save_best_only=True)
 
 #data generator
-train_generator = data_generator.create_train(
-    train_dataset_info[train_ids.index], BATCH_SIZE, INPUT_SHAPE, augument=False)
-validation_generator = data_generator.create_train(
-    train_dataset_info[test_ids.index], 256, INPUT_SHAPE, augument=False)
+train_generator = data_generator.create_train(train_dataset_info[train_ids.index], BATCH_SIZE, (299,299,4), augument=False)
+validation_generator = data_generator.create_train(train_dataset_info[test_ids.index], 256, (299,299,4), augument=False)
 
 for layer in pretrain_model.layers:
     layer.trainable = False
@@ -97,22 +102,39 @@ model.compile(
     loss=f1_loss,  
     optimizer=Adam(1e-3),
     metrics=['categorical_accuracy', 'binary_accuracy', f1])
-
+'''
+#test
 history = model.fit_generator(
     train_generator,
     steps_per_epoch=100,
     validation_data=next(validation_generator),
-    epochs=15, 
+    epochs=2, 
     verbose=1,
     callbacks=[checkpointer])
 
+for x in model.trainable_weights:
+    print (x.name)
+print ('\n')
+
+for x in model.non_trainable_weights:
+    print (x.name)
+print ('\n')
+
+'''
+
+
+history = model.fit_generator(
+    train_generator,
+    steps_per_epoch=1000,
+    validation_data=next(validation_generator),
+    epochs=20, 
+    verbose=1)
+    #callbacks=[])
+
 #show_history(history)
 
-#data generator
-train_generator = data_generator.create_train(
-    train_dataset_info[train_ids.index], BATCH_SIZE, INPUT_SHAPE, augument=True)
-validation_generator = data_generator.create_train(
-    train_dataset_info[test_ids.index], 256, INPUT_SHAPE, augument=False)
+model.save('working/model_not_train.h5')
+
 
 for layer in pretrain_model.layers:
     layer.trainable = True
@@ -122,12 +144,38 @@ model.compile(
     optimizer=Adam(1e-4),
     metrics=['categorical_accuracy', 'binary_accuracy', f1])
 
-history = model.fit_generator(
+history1 = model.fit_generator(
     train_generator,
-    steps_per_epoch=100,
+    steps_per_epoch=1000,
     validation_data=next(validation_generator),
-    epochs=180, 
-    verbose=1,
-    callbacks=[checkpointer])
+    epochs=20, 
+    verbose=1)
+    #callbacks=[])
 
-#show_history(history)
+#show_history(history1)
+
+model.save('working/model_train1.h5')
+
+
+def lr_schedule(epoch):
+    lr = 1e-4
+    print('learning rate:',lr)
+    return lr
+
+lr_scheduler = LearningRateScheduler(lr_schedule)
+
+history2 = model.fit_generator(
+    train_generator,
+    steps_per_epoch=1000,
+    validation_data=next(validation_generator),
+    epochs=20, 
+    verbose=1,
+    callbacks=[lr_scheduler])
+
+#show_history(history2)
+
+model.save('working/model_train2.h5')
+
+show_history(history)
+show_history(history1)
+show_history(history2)

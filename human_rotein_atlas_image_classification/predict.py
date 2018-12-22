@@ -34,11 +34,11 @@ import tensorflow as tf
 import keras
 
 from data_generator import data_generator
-from uitls import f1
+from uitls import f1_loss,f1
 
 model = load_model(
-    'working/InceptionResNetV2.model', 
-    custom_objects={'f1': f1})
+    'working/model_train2.h5', 
+    custom_objects={'f1_loss': f1_loss, 'f1':f1})
 
 submit = pd.read_csv('data/sample_submission.csv')
 

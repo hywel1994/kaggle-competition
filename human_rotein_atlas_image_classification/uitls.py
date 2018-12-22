@@ -104,19 +104,23 @@ def get_arr(Id, src_dir, shape_2, test=False):
     return arr
 
 def show_history(history):
-    fig, ax = plt.subplots(1, 3, figsize=(15,5))
+    fig, ax = plt.subplots(1, 4, figsize=(15,5))
     ax[0].set_title('loss')
     ax[0].plot(history.epoch, history.history["loss"], label="Train loss")
     ax[0].plot(history.epoch, history.history["val_loss"], label="Validation loss")
     ax[1].set_title('f1')
     ax[1].plot(history.epoch, history.history["f1"], label="Train f1")
     ax[1].plot(history.epoch, history.history["val_f1"], label="Validation f1")
-    ax[2].set_title('acc')
-    ax[2].plot(history.epoch, history.history["acc"], label="Train acc")
-    ax[2].plot(history.epoch, history.history["val_acc"], label="Validation acc")
+    ax[2].set_title('c_acc')
+    ax[2].plot(history.epoch, history.history["categorical_accuracy"], label="Train c_acc")
+    ax[2].plot(history.epoch, history.history["val_categorical_accuracy"], label="Validation c_acc")
+    ax[3].set_title('b_acc')
+    ax[3].plot(history.epoch, history.history["binary_accuracy"], label="Train b_acc")
+    ax[3].plot(history.epoch, history.history["val_binary_accuracy"], label="Validation b_acc")
     ax[0].legend()
     ax[1].legend()
     ax[2].legend()
+    ax[3].legend()
     plt.show()
 
 

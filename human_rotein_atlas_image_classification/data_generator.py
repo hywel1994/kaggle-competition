@@ -10,7 +10,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 class data_generator:
-    def create_train(self, dataset_info, batch_size, shape, augument=True):
+    def create_train(dataset_info, batch_size, shape, augument=True):
         assert shape[2] == 4
         while True:
             random_indexes = np.random.choice(len(dataset_info), batch_size)
@@ -26,7 +26,7 @@ class data_generator:
             yield batch_images, batch_labels
             
     
-    def load_image(self, path, shape):
+    def load_image(path, shape):
         R = np.array(Image.open(path+'_red.png'))
         G = np.array(Image.open(path+'_green.png'))
         B = np.array(Image.open(path+'_blue.png'))
@@ -42,7 +42,7 @@ class data_generator:
         image = np.divide(image, 255)
         return image  
                 
-    def augment(self, image):
+    def augment(image):
         augment_img = iaa.Sequential([
             iaa.OneOf([
                 iaa.Affine(rotate=0),
