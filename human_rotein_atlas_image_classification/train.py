@@ -32,7 +32,7 @@ import keras
 
 from sklearn.model_selection import train_test_split
 
-from uitls import f1,f1_loss,show_history
+from uitls import f1,f1_loss,show_history,focal_loss
 from data_generator import data_generator  
 
 import warnings
@@ -99,7 +99,7 @@ for layer in pretrain_model.layers:
     layer.trainable = False
 
 model.compile(
-    loss=f1_loss,  
+    loss=focal_loss,  
     optimizer=Adam(1e-3),
     metrics=['categorical_accuracy', 'binary_accuracy', f1])
 '''
@@ -140,7 +140,7 @@ for layer in pretrain_model.layers:
     layer.trainable = True
 
 model.compile(
-    loss=f1_loss,  
+    loss=focal_loss,  
     optimizer=Adam(1e-4),
     metrics=['categorical_accuracy', 'binary_accuracy', f1])
 
