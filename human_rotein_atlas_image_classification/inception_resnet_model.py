@@ -35,12 +35,12 @@ from kaggle_data import data_generator
 
 class inception_resnet_model:
     def __init__(self, input_shape, n_out, test=False):
-        self.test = False
+        self.test = test
         self.input_shape = input_shape
         self.n_out = n_out
 
     def create_model(self):
-        self.pretrain_model = InceptionResNetV2(include_top=False, weights='imagenet', input_shape=INPUT_SHAPE+[3],pooling='avg',classes='avg')
+        self.pretrain_model = InceptionResNetV2(include_top=False, weights='imagenet', input_shape=self.input_shape+[3],pooling='avg',classes='avg')
 
         input_tensor = Input(shape=self.input_shape+[4])
         out = Conv2D(3, kernel_size=1, strides=1, padding='same', activation='tanh', kernel_regularizer=regularizers.l2(1e-4))(input_tensor)
@@ -78,7 +78,7 @@ class inception_resnet_model:
                 lr = K.get_value(self.model.optimizer.lr)
                 K.set_value(self.model.optimizer.lr, lr * 0.1)
                 print("lr changed to {}".format(lr * 0.1))
-        return K.get_value(self.model.optimizer.lr)
+            return K.get_value(self.model.optimizer.lr)
 
         lr_scheduler = LearningRateScheduler(lr_schedule)
         

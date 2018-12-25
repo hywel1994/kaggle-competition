@@ -7,6 +7,8 @@ from sklearn.model_selection import train_test_split
 import warnings
 warnings.filterwarnings("ignore")
 
+import keras
+
 from kaggle_data import data_generator
 from uitls import f1,f1_loss,show_history
 from inception_resnet_model import inception_resnet_model
@@ -31,18 +33,26 @@ train_dataset_info = np.array(train_dataset_info)
 train_ids, test_ids, train_targets, test_target = train_test_split(
     data['Id'], data['Target'], test_size=0.2, random_state=42)
 
-#data generator
-train_generator = data_generator.create_train(train_dataset_info[train_ids.index], BATCH_SIZE, (299,299,4), augument=True)
-validation_generator = data_generator.create_train(train_dataset_info[test_ids.index], 256, (299,299,4), augument=True)
+keras.backend.clear_session()
 
 model = inception_resnet_model(INPUT_SHAPE,N_OUT,test = False)
 model.create_model()
 model.summary()
 
+#data generator
+train_generator = data_generator.create_train(train_dataset_info[train_ids.index], BATCH_SIZE, (299,299,4), augument=False)
+validation_generator = data_generator.create_train(train_dataset_info[test_ids.index], 256, (299,299,4), augument=False)
+model.set_generators(train_generator,validation_generator)
+
 model.compile_model()
 history1 = model.learn(False)
 model.save('working/model_not_train.h5')
 #todo prediction
+
+#data generator
+train_generator = data_generator.create_train(train_dataset_info[train_ids.index], BATCH_SIZE, (299,299,4), augument=True)
+validation_generator = data_generator.create_train(train_dataset_info[test_ids.index], 256, (299,299,4), augument=True)
+model.set_generators(train_generator,validation_generator)
 
 model.compile_model()
 history2 = model.learn(True)
