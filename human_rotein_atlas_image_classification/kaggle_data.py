@@ -2,7 +2,7 @@ import os, sys, math
 import numpy as np
 import pandas as pd
 from PIL import Image
-import cv2
+from skimage.transform import resize
 from imgaug import augmenters as iaa
 from tqdm import tqdm
 
@@ -50,7 +50,7 @@ class data_generator:
             B,
             Y),-1)
         
-        image = cv2.resize(image, (shape[0], shape[1]))
+        image = resize(image, (shape[0], shape[1]))
         image = np.divide(image, 255)
         return image  
                 

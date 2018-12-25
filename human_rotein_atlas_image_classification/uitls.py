@@ -1,22 +1,24 @@
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential, load_model
-from keras.layers import Activation
-from keras.layers import Dropout
-from keras.layers import Flatten
-from keras.layers import Dense
-from keras.layers import Input
-from keras.layers import BatchNormalization
-from keras.layers import Conv2D
-from keras.models import Model
-from keras.applications import InceptionResNetV2
-from keras.callbacks import ModelCheckpoint
-from keras.callbacks import LambdaCallback
-from keras.callbacks import Callback
-from keras import metrics
-from keras.optimizers import Adam 
-from keras import backend as K
+from tensorflow.keras.metrics import categorical_accuracy
+from tensorflow.keras.callbacks import LearningRateScheduler
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.layers import Activation
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.applications import InceptionResNetV2
+from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import LambdaCallback
+from tensorflow.keras.callbacks import Callback
+from tensorflow.keras import metrics
+from tensorflow.keras.optimizers import Adam 
+from tensorflow.keras import backend as K
+from tensorflow import keras
 import tensorflow as tf
-import keras
 
 from sklearn.metrics import f1_score
 
@@ -25,7 +27,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
-import cv2
+from skimage.transform import resize
 from imgaug import augmenters as iaa
 from tqdm import tqdm
 
@@ -108,7 +110,7 @@ def get_arr(Id, src_dir, shape_2, test=False):
         arr = get_arr0(Id, src_dir, test=True)
     else:
         arr = get_arr0(Id, src_dir)
-    arr = cv2.resize(arr, shape_2).astype('float32')
+    arr = resize(arr, shape_2).astype('float32')
     return arr
 
 def show_history(history):
