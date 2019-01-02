@@ -10,13 +10,14 @@ warnings.filterwarnings("ignore")
 import tensorflow.keras as keras
 
 from kaggle_data_3 import data_generator
-from uitls import f1,f1_loss,show_history
+from uitls import f1,f1_loss,show_history,loss_all
 from inception_resnet_model_3 import inception_resnet_model
 
+os.environ['CUDA_VISIBLE_DEVICES']='7'
 #parameter
 INPUT_SHAPE = [299,299]
 N_OUT = 28
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 src_dir = 'data'
 path_to_train = 'data/train'
 

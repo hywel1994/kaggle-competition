@@ -28,8 +28,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
 from skimage.transform import resize
-from imgaug import augmenters as iaa
-from tqdm import tqdm
+#from imgaug import augmenters as iaa
+#from tqdm import tqdm
 
 K_epsilon = K.epsilon()
 
@@ -69,6 +69,10 @@ def focal_loss(y_true, y_pred):
     pt_0 = tf.where(tf.equal(y_true, 0), y_pred, tf.zeros_like(y_pred))
     return -K.sum(alpha * K.pow(1. - pt_1, gamma) * K.log(pt_1))-K.sum((1-alpha) * K.pow( pt_0, gamma) * K.log(1. - pt_0))
 
+def loss_all(y_true, y_pred):
+    loss1 = f1_loss(y_true, y_pred)
+    loss2 = focal_loss(y_true, y_pred)
+    return loss1+loss2
 
 def show_arr(arr, nrows = 1, ncols = 4, figsize=(15, 5)):
     fig, subs = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
@@ -134,16 +138,3 @@ def show_history(history):
     plt.show()
 
 
-
-# def calc_threshold(pred):
-#     ### calc threshold
-#     threshold_dic = {}
-#     for idx in tqdm(range(28)):
-#         m = 0
-#         for ii in range(100):
-#             threshold0 = ii*0.01
-#             f1_val = f1_score(y_cat_train_dic[idx], threshold0<(pred[:,idx]))
-#             if m < f1_val:
-#                 threshold_dic[idx] = threshold0+0.005
-#                 m = f1_val
-#     return threshold_dic

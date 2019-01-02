@@ -32,21 +32,8 @@ from PIL import Image
 from tqdm import tqdm
 
 from uitls import f1,f1_loss,show_history,focal_loss,loss_all
-from kaggle_data_3 import data_generator  
-
-class XTensorBoard(TensorBoard):
-    def on_epoch_begin(self, epoch, logs=None):
-        # get values
-        lr = float(K.get_value(self.model.optimizer.lr))
-        decay = float(K.get_value(self.model.optimizer.decay))
-        # computer lr
-        lr = lr * (1. / (1 + decay * epoch))
-        K.set_value(self.model.optimizer.lr, lr)
-
-    def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-        logs['lr'] = K.get_value(self.model.optimizer.lr)
-        super().on_epoch_end(epoch, logs)
+from kaggle_data_3 import data_generator
+from sgdr_callback import SGDRScheduler
 
 
 class inception_resnet_model:
@@ -87,15 +74,6 @@ class inception_resnet_model:
         self.validation_generator = validation_generator
 
     def learn(self,trainable = True):
-        def lr_schedule(epoch):
-            if epoch % 10 == 0 and epoch != 0:
-                lr = K.get_value(self.model.optimizer.lr)
-                K.set_value(self.model.optimizer.lr, lr * 0.1)
-                print("lr changed to {}".format(lr * 0.1))
-            return K.get_value(self.model.optimizer.lr)
-
-        lr_scheduler = LearningRateScheduler(lr_schedule)
-        
         if self.test:
             epoch = 2
         else:
@@ -103,6 +81,13 @@ class inception_resnet_model:
                 epoch = 40
             else:
                 epoch = 20
+                
+        schedule = SGDRScheduler(min_lr=1e-5,
+                                max_lr=1e-2,
+                                steps_per_epoch=1000,
+                                lr_decay=0.9,
+                                cycle_length=5,
+                                mult_factor=1.5)
 
         #self.inception_resnet_trainable(trainable)
         history = self.model.fit_generator(
@@ -111,7 +96,7 @@ class inception_resnet_model:
             validation_data=next(self.validation_generator),
             epochs=epoch, 
             verbose=1,
-            callbacks=[lr_scheduler,XTensorBoard(log_dir='./log')])
+            callbacks=[schedule,TensorBoard(log_dir='./log')])
         
         return history
     
