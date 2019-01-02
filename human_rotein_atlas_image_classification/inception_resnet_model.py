@@ -118,8 +118,8 @@ class inception_resnet_model:
                 epoch = 20
         print ('self.log_dir = ', self.log_dir)
         if self.scheduler_type=='sgdr':
-            scheduler = SGDRScheduler(min_lr=1e-5,
-                                max_lr=1e-2,
+            scheduler = SGDRScheduler(min_lr=1e-6,
+                                max_lr=1e-3,
                                 steps_per_epoch=1000,
                                 lr_decay=0.9,
                                 cycle_length=5,
