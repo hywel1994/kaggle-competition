@@ -1,27 +1,28 @@
-from tensorflow.keras.metrics import categorical_accuracy
-from tensorflow.keras.callbacks import LearningRateScheduler
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Activation
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.layers import Flatten
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import BatchNormalization
-from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.models import Model
-from tensorflow.keras.applications import InceptionResNetV2
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.callbacks import LambdaCallback
-from tensorflow.keras.callbacks import Callback
-from tensorflow.keras import metrics
-from tensorflow.keras.optimizers import Adam 
-from tensorflow.keras import backend as K
 from tensorflow import keras
 import tensorflow as tf
-from tensorflow.keras.callbacks import TensorBoard
-from tensorflow.keras.callbacks import LearningRateScheduler
-from tensorflow.keras import regularizers
+from keras.metrics import categorical_accuracy
+from keras.callbacks import LearningRateScheduler
+from keras.preprocessing.image import ImageDataGenerator
+from keras.models import Sequential, load_model
+from keras.layers import Activation
+from keras.layers import Dropout
+from keras.layers import Flatten
+from keras.layers import Dense
+from keras.layers import Input
+from keras.layers import BatchNormalization
+from keras.layers import Conv2D
+from keras.models import Model
+from keras.applications import InceptionResNetV2
+from keras.callbacks import ModelCheckpoint
+from keras.callbacks import LambdaCallback
+from keras.callbacks import Callback
+from keras import metrics
+from keras.optimizers import Adam 
+from keras import backend as K
+
+from keras.callbacks import TensorBoard
+from keras.callbacks import LearningRateScheduler
+from keras import regularizers
 
 import os, sys, math
 import numpy as np
@@ -33,7 +34,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from uitls import f1,f1_loss,show_history,focal_loss,loss_all
-from kaggle_data_3 import data_generator  
+from kaggle_data import data_generator  
 from sgdr_callback import SGDRScheduler
 
 
@@ -65,14 +66,16 @@ class inception_resnet_model:
         self.pretrain_model = InceptionResNetV2(include_top=False, weights='imagenet', input_shape=self.input_shape+[3])
         if self.div==3:
             input_tensor = Input(shape=self.input_shape+[3])
+            bn = BatchNormalization()(input_tensor)
             #out = Conv2D(3, kernel_size=1, strides=1, padding='same', activation='tanh', kernel_regularizer=regularizers.l2(1e-4))(input_tensor)
         elif self.div==4:
             input_tensor = Input(shape=self.input_shape+[4])
-            input_tensor = Conv2D(3, kernel_size=1, strides=1, padding='same', activation='tanh', kernel_regularizer=regularizers.l2(1e-4))(input_tensor)
+            bn = Conv2D(3, kernel_size=1, strides=1, padding='same', activation='tanh', kernel_regularizer=regularizers.l2(1e-4))(input_tensor)
+            bn = BatchNormalization()(bn)
         else:
             print('image div error')
             return
-        bn = BatchNormalization()(input_tensor)
+        
         x = self.pretrain_model(bn)
         
         x = Conv2D(128, kernel_size=(1,1), activation='relu')(x)
@@ -113,7 +116,7 @@ class inception_resnet_model:
                 epoch = 40
             else:
                 epoch = 20
-
+        print ('self.log_dir = ', self.log_dir)
         if self.scheduler_type=='sgdr':
             scheduler = SGDRScheduler(min_lr=1e-5,
                                 max_lr=1e-2,
@@ -121,10 +124,10 @@ class inception_resnet_model:
                                 lr_decay=0.9,
                                 cycle_length=5,
                                 mult_factor=1.5)
-            callback_list=[scheduler,XTensorBoard(log_dir=self.log_dir)]
+            callback_list=[scheduler, XTensorBoard(log_dir=self.log_dir)]
         elif self.scheduler_type=='lr':
             scheduler = LearningRateScheduler(lr_schedule)
-            callback_list=[scheduler,XTensorBoard(log_dir=self.log_dir)]
+            callback_list=[scheduler, XTensorBoard(log_dir=self.log_dir)]
         else:
             callback_list=[XTensorBoard(log_dir=self.log_dir)]
 

@@ -1,6 +1,6 @@
-
-from tensorflow.keras.callbacks import Callback
-import tensorflow.keras.backend as K
+from tensorflow import keras
+from keras.callbacks import Callback
+import keras.backend as K
 import numpy as np
 
 class SGDRScheduler(Callback):
