@@ -24,7 +24,8 @@ class data_generator:
                 batch_images[i] = image
                 batch_labels[i][dataset_info[idx]['labels']] = 1
             yield batch_images, batch_labels
-            
+
+    ''' 
     def create_train_all(dataset_info, shape, augument=True):
         assert shape[2] == 4
         images_all = np.empty((len(dataset_info), shape[0], shape[1], shape[2]))
@@ -37,6 +38,7 @@ class data_generator:
             images_all[i] = image
             labels_all[i][dataset_info[idx]['labels']] = 1
         return images_all, labels_all
+    '''
 
     def load_image(path, shape):
         R = np.array(Image.open(path+'_red.png'))
