@@ -21,7 +21,7 @@ flags.DEFINE_string('gpu', None, 'comma separated list of GPU to use.')
 flags.DEFINE_int('input_div', 3, 'input_div')
 flags.DEFINE_int('input_type', 0, 'input_type')
 flags.DEFINE_int('batch_size', 24, 'batch_size')
-
+flags.DEFINE_string('log_dir', './log', 'log_dir.')
 
 if FLAGS.gpu: 
     os.environ['CUDA_VISIBLE_DEVICES']=FLAGS.gpu
@@ -33,6 +33,7 @@ INPUT_DIV = FLAGS.input_div
 BATCH_SIZE = FLAGS.batch_size
 input_type = FLAGS.input_type
 
+log_dir = FLAGS.log_dir
 src_dir = 'data'
 path_to_train = 'data/train'
 data = pd.read_csv('data/train.csv')
@@ -50,7 +51,7 @@ train_ids, test_ids, train_targets, test_target = train_test_split(
 
 keras.backend.clear_session()
 
-model = inception_resnet_model(INPUT_SHAPE,N_OUT,div=INPUT_DIV, scheduler_type='sgdr', test = False)
+model = inception_resnet_model(INPUT_SHAPE,N_OUT,div=INPUT_DIV, scheduler_type='sgdr', test = False, log_dir = log_dir)
 model.create_model()
 model.summary()
 

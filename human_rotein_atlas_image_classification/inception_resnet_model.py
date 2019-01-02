@@ -53,12 +53,13 @@ class XTensorBoard(TensorBoard):
 
 
 class inception_resnet_model:
-    def __init__(self, input_shape, n_out, div=3, scheduler_type=None, test=False):
+    def __init__(self, input_shape, n_out, div=3, scheduler_type=None, test=False, log_dir ='./log'):
         self.test = test
         self.input_shape = input_shape
         self.n_out = n_out
         self.div = div
         self.scheduler_type=scheduler_type
+        self.log_dir = log_dir
 
     def create_model(self):
         self.pretrain_model = InceptionResNetV2(include_top=False, weights='imagenet', input_shape=self.input_shape+[3])
@@ -120,12 +121,12 @@ class inception_resnet_model:
                                 lr_decay=0.9,
                                 cycle_length=5,
                                 mult_factor=1.5)
-            callback_list=[scheduler,XTensorBoard(log_dir='./log')]
+            callback_list=[scheduler,XTensorBoard(log_dir=self.log_dir)]
         elif self.scheduler_type=='lr':
             scheduler = LearningRateScheduler(lr_schedule)
-            callback_list=[scheduler,XTensorBoard(log_dir='./log')]
+            callback_list=[scheduler,XTensorBoard(log_dir=self.log_dir)]
         else:
-            callback_list=[XTensorBoard(log_dir='./log')]
+            callback_list=[XTensorBoard(log_dir=self.log_dir)]
 
         #self.inception_resnet_trainable(trainable)
         history = self.model.fit_generator(
