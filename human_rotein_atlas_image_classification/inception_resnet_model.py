@@ -21,6 +21,7 @@ from tensorflow import keras
 import tensorflow as tf
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.callbacks import LearningRateScheduler
+from tensorflow.keras import regularizers
 
 import os, sys, math
 import numpy as np
@@ -33,6 +34,8 @@ from tqdm import tqdm
 
 from uitls import f1,f1_loss,show_history,focal_loss,loss_all
 from kaggle_data_3 import data_generator  
+from sgdr_callback import SGDRScheduler
+
 
 class XTensorBoard(TensorBoard):
     def on_epoch_begin(self, epoch, logs=None):
@@ -50,16 +53,24 @@ class XTensorBoard(TensorBoard):
 
 
 class inception_resnet_model:
-    def __init__(self, input_shape, n_out, test=False):
+    def __init__(self, input_shape, n_out, div=3, scheduler_type=None, test=False):
         self.test = test
         self.input_shape = input_shape
         self.n_out = n_out
+        self.div = div
+        self.scheduler_type=scheduler_type
 
     def create_model(self):
         self.pretrain_model = InceptionResNetV2(include_top=False, weights='imagenet', input_shape=self.input_shape+[3])
-
-        input_tensor = Input(shape=self.input_shape+[3])
-        #out = Conv2D(3, kernel_size=1, strides=1, padding='same', activation='tanh', kernel_regularizer=regularizers.l2(1e-4))(input_tensor)
+        if self.div==3:
+            input_tensor = Input(shape=self.input_shape+[3])
+            #out = Conv2D(3, kernel_size=1, strides=1, padding='same', activation='tanh', kernel_regularizer=regularizers.l2(1e-4))(input_tensor)
+        elif self.div==4:
+            input_tensor = Input(shape=self.input_shape+[4])
+            input_tensor = Conv2D(3, kernel_size=1, strides=1, padding='same', activation='tanh', kernel_regularizer=regularizers.l2(1e-4))(input_tensor)
+        else:
+            print('image div error')
+            return
         bn = BatchNormalization()(input_tensor)
         x = self.pretrain_model(bn)
         
@@ -94,8 +105,6 @@ class inception_resnet_model:
                 print("lr changed to {}".format(lr * 0.1))
             return K.get_value(self.model.optimizer.lr)
 
-        lr_scheduler = LearningRateScheduler(lr_schedule)
-        
         if self.test:
             epoch = 2
         else:
@@ -104,6 +113,20 @@ class inception_resnet_model:
             else:
                 epoch = 20
 
+        if self.scheduler_type=='sgdr':
+            scheduler = SGDRScheduler(min_lr=1e-5,
+                                max_lr=1e-2,
+                                steps_per_epoch=1000,
+                                lr_decay=0.9,
+                                cycle_length=5,
+                                mult_factor=1.5)
+            callback_list=[scheduler,XTensorBoard(log_dir='./log')]
+        elif self.scheduler_type=='lr':
+            scheduler = LearningRateScheduler(lr_schedule)
+            callback_list=[scheduler,XTensorBoard(log_dir='./log')]
+        else:
+            callback_list=[XTensorBoard(log_dir='./log')]
+
         #self.inception_resnet_trainable(trainable)
         history = self.model.fit_generator(
             generator=self.training_generator,
@@ -111,7 +134,7 @@ class inception_resnet_model:
             validation_data=next(self.validation_generator),
             epochs=epoch, 
             verbose=1,
-            callbacks=[lr_scheduler,XTensorBoard(log_dir='./log')])
+            callbacks=callback_list)
         
         return history
     

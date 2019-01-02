@@ -72,7 +72,7 @@ def focal_loss(y_true, y_pred):
 def loss_all(y_true, y_pred):
     loss1 = f1_loss(y_true, y_pred)
     loss2 = focal_loss(y_true, y_pred)
-    return loss1+loss2
+    return 10*loss1+loss2
 
 def show_arr(arr, nrows = 1, ncols = 4, figsize=(15, 5)):
     fig, subs = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
