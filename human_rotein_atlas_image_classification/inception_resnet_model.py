@@ -36,7 +36,6 @@ from tqdm import tqdm
 from uitls import f1,f1_loss,show_history,focal_loss,loss_all
 from kaggle_data import data_generator  
 from sgdr_callback import SGDRScheduler
-from my_tensorboard import SGDRTensorBoard
 
 
 class XTensorBoard(TensorBoard):

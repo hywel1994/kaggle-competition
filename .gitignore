@@ -7,6 +7,9 @@ __pycache__/
 *.h5
 *.model
 data/
+working/
+train_log/
+.DS_Store
 
 # C extensions
 *.so
