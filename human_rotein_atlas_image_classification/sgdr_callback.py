@@ -1,7 +1,8 @@
 from tensorflow import keras
-from keras.callbacks import Callback
-import keras.backend as K
+from tensorflow.keras.callbacks import Callback
+import tensorflow.keras.backend as K
 import numpy as np
+from tensorflow.keras.callbacks import TensorBoard
 
 class SGDRScheduler(Callback):
     '''Cosine annealing learning rate scheduler with periodic restarts.
@@ -81,4 +82,5 @@ class SGDRScheduler(Callback):
 
     def on_train_end(self, logs={}):
         '''Set weights to the values from the end of the most recent cycle for best performance.'''
-        self.model.set_weights(self.best_weights)
+        if self.best_weights:
+            self.model.set_weights(self.best_weights)

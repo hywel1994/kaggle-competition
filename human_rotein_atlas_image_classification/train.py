@@ -25,6 +25,8 @@ flags.DEFINE_integer('batch_size', 24, 'batch_size')
 flags.DEFINE_string('tb_log_dir', None, 'tb_log_dir.')
 flags.DEFINE_string('scheduler_type', None, 'scheduler_type')
 flags.DEFINE_integer('test',0,'test')
+flags.DEFINE_integer('augument',0,'augument')
+
 
 def train(argv):
     if FLAGS.gpu: 
@@ -40,6 +42,7 @@ def train(argv):
     log_dir = FLAGS.tb_log_dir
     scheduler_type = FLAGS.scheduler_type
     test = FLAGS.test
+    augument = FLAGS.augument
 
     src_dir = 'data'
     path_to_train = 'data/train'
@@ -63,8 +66,8 @@ def train(argv):
     model.summary()
 
     #data generator
-    train_generator = data_generator.create_train(train_dataset_info[train_ids.index], BATCH_SIZE, (299,299,INPUT_DIV), type_image = input_type,augument=False)
-    validation_generator = data_generator.create_train(train_dataset_info[test_ids.index], 256, (299,299,INPUT_DIV), type_image = input_type, augument=False)
+    train_generator = data_generator.create_train(train_dataset_info[train_ids.index], BATCH_SIZE, (299,299,INPUT_DIV), type_image = input_type,augument=augument)
+    validation_generator = data_generator.create_train(train_dataset_info[test_ids.index], 256, (299,299,INPUT_DIV), type_image = input_type, augument=augument)
     model.set_generators(train_generator,validation_generator)
 
     model.inception_resnet_trainable(False)
@@ -75,8 +78,8 @@ def train(argv):
     #todo prediction
 
     #data generator
-    train_generator = data_generator.create_train(train_dataset_info[train_ids.index], BATCH_SIZE, (299,299,INPUT_DIV), type_image = input_type, augument=True)
-    validation_generator = data_generator.create_train(train_dataset_info[test_ids.index], 256, (299,299,INPUT_DIV), type_image = input_type, augument=True)
+    train_generator = data_generator.create_train(train_dataset_info[train_ids.index], BATCH_SIZE, (299,299,INPUT_DIV), type_image = input_type, augument=augument)
+    validation_generator = data_generator.create_train(train_dataset_info[test_ids.index], 256, (299,299,INPUT_DIV), type_image = input_type, augument=augument)
     model.set_generators(train_generator,validation_generator)
 
     model.inception_resnet_trainable(True)

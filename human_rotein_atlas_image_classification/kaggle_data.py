@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 from skimage.transform import resize
-from imgaug import augmenters as iaa
+#from imgaug import augmenters as iaa
 #from keras.preprocessing.image import ImageDataGenerator
 #from keras.preprocessing import image
 
