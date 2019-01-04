@@ -115,7 +115,9 @@ class inception_resnet_model:
                 epoch = 10
             else:
                 epoch = 5
-        print ('self.log_dir = ', self.log_dir)
+        filepath="test-{epoch:02d}-{val_acc:.2f}.hdf5"
+        checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
+        #print ('self.log_dir = ', self.log_dir)
         if self.scheduler_type=='sgdr':
             scheduler = SGDRScheduler(min_lr=1e-6,
                                 max_lr=1e-3,
@@ -123,12 +125,12 @@ class inception_resnet_model:
                                 lr_decay=0.9,
                                 cycle_length=5,
                                 mult_factor=1.5)
-            callback_list=[scheduler,XTensorBoard(log_dir=self.log_dir)]
+            callback_list=[scheduler,XTensorBoard(log_dir=self.log_dir),checkpoint]
         elif self.scheduler_type=='lr':
             scheduler = LearningRateScheduler(lr_schedule)
-            callback_list=[scheduler, XTensorBoard(log_dir=self.log_dir)]
+            callback_list=[scheduler, XTensorBoard(log_dir=self.log_dir),checkpoint]
         else:
-            callback_list=[XTensorBoard(log_dir=self.log_dir)]
+            callback_list=[XTensorBoard(log_dir=self.log_dir),checkpoint]
 
         #self.inception_resnet_trainable(trainable)
         history = self.model.fit_generator(
