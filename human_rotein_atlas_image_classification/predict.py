@@ -10,6 +10,6 @@ imagePath = 'data/test/'
 
 model = inception_resnet_model(INPUT_SHAPE,N_OUT,div=3)
 
-model.load('working/model_train1546691056.h5')
-model.load_weight('working/log_1_5/test-22.hdf5')
+model.load('working/model_train1546768075.h5')
+model.load_weight('working/log_1_6/test2-22.hdf5')
 model.predict(submit,imagePath,type_image=0)

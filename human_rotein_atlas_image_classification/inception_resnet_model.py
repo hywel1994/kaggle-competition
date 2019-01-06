@@ -110,18 +110,20 @@ class inception_resnet_model:
 
         if self.test:
             epoch = 2
+            steps_per_epoch = 10
         else:
+            steps_per_epoch = 3000
             if trainable:
-                epoch = 40
+                epoch = 200
             else:
-                epoch = 3
-        filepath="test2-{epoch:02d}.hdf5"
-        checkpoint = ModelCheckpoint(filepath, monitor='categorical_accuracy', verbose=1, save_best_only=True, mode='max')
+                epoch = 5
+        filepath="test-{epoch:02d}.hdf5"
+        checkpoint = ModelCheckpoint(filepath, monitor='f1', verbose=1, save_best_only=True, mode='max')
         #print ('self.log_dir = ', self.log_dir)
         if self.scheduler_type=='sgdr':
-            scheduler = SGDRScheduler(min_lr=1e-6/8,
-                                max_lr=1e-3/8,
-                                steps_per_epoch=3000,
+            scheduler = SGDRScheduler(min_lr=1e-6/4,
+                                max_lr=1e-3/4,
+                                steps_per_epoch=steps_per_epoch,
                                 lr_decay=0.9,
                                 cycle_length=10,
                                 mult_factor=1.5)
@@ -135,7 +137,7 @@ class inception_resnet_model:
         #self.inception_resnet_trainable(trainable)
         history = self.model.fit_generator(
             generator=self.training_generator,
-            steps_per_epoch=3000,
+            steps_per_epoch=steps_per_epoch,
             validation_data=next(self.validation_generator),
             epochs=epoch, 
             verbose=1,
