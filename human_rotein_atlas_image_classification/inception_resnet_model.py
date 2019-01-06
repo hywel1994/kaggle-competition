@@ -112,18 +112,18 @@ class inception_resnet_model:
             epoch = 2
         else:
             if trainable:
-                epoch = 10
+                epoch = 40
             else:
-                epoch = 5
-        filepath="test-{epoch:02d}-{val_acc:.2f}.hdf5"
-        checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
+                epoch = 3
+        filepath="test2-{epoch:02d}.hdf5"
+        checkpoint = ModelCheckpoint(filepath, monitor='categorical_accuracy', verbose=1, save_best_only=True, mode='max')
         #print ('self.log_dir = ', self.log_dir)
         if self.scheduler_type=='sgdr':
-            scheduler = SGDRScheduler(min_lr=1e-6,
-                                max_lr=1e-3,
-                                steps_per_epoch=1000,
+            scheduler = SGDRScheduler(min_lr=1e-6/8,
+                                max_lr=1e-3/8,
+                                steps_per_epoch=3000,
                                 lr_decay=0.9,
-                                cycle_length=5,
+                                cycle_length=10,
                                 mult_factor=1.5)
             callback_list=[scheduler,XTensorBoard(log_dir=self.log_dir),checkpoint]
         elif self.scheduler_type=='lr':
@@ -135,7 +135,7 @@ class inception_resnet_model:
         #self.inception_resnet_trainable(trainable)
         history = self.model.fit_generator(
             generator=self.training_generator,
-            steps_per_epoch=1000,
+            steps_per_epoch=3000,
             validation_data=next(self.validation_generator),
             epochs=epoch, 
             verbose=1,
@@ -143,11 +143,11 @@ class inception_resnet_model:
         
         return history
     
-    def predict(self, submit,imagePath):
+    def predict(self, submit,imagePath, type_image):
         predicted = []
         for name in tqdm(submit['Id']):
             path = os.path.join(imagePath, name)
-            image = data_generator.load_image(path, self.input_shape)
+            image = data_generator.load_image(path, self.input_shape+[self.div],type_image)
             score_predict = self.model.predict(image[np.newaxis])[0]
             label_predict = np.arange(28)[score_predict>=0.2]
             str_predict_label = ' '.join(str(l) for l in label_predict)
@@ -161,6 +161,9 @@ class inception_resnet_model:
     
     def load(self, modelinputpath):
         self.model = load_model(modelinputpath,custom_objects={'loss_all':loss_all, 'focal_loss': focal_loss, 'f1':f1})
+
+    def load_weight(self, modelinputpath):
+        self.model.load_weights(modelinputpath)
 
     def inception_resnet_trainable(self,trainable):
         for layer in self.pretrain_model.layers:

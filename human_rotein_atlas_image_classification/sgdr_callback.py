@@ -49,6 +49,7 @@ class SGDRScheduler(Callback):
         self.mult_factor = mult_factor
 
         self.history = {}
+        self.best_weights=None
 
     def clr(self):
         '''Calculate the learning rate.'''
