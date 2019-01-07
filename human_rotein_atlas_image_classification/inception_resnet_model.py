@@ -157,6 +157,48 @@ class inception_resnet_model:
 
         submit['Predicted'] = predicted
         submit.to_csv('submission.csv', index=False)
+    
+    def eval(self, dataset_info, type_image):
+        labels_true = []
+        scores_predict = []
+        for idx in range(len(dataset_info)):
+            image = data_generator.load_image(dataset_info[idx]['path'], self.input_shape+[self.div], type_image)   
+            labels = np.zeros(28)
+            labels[dataset_info[idx]['labels']] = 1
+            labels_true +=[labels]
+            score_predict = self.model.predict(image[np.newaxis])[0]
+            #label_predict = np.arange(28)[score_predict>=label_threshold]
+            scores_predict += [score_predict]
+
+        return labels_true, scores_predict
+    
+    def snapshot_true(self, dataset_info):
+        labels_true = []
+        for idx in range(len(dataset_info)):
+            labels = np.zeros(28)
+            labels[dataset_info[idx]['labels']] = 1
+            labels_true +=[labels]
+
+        return labels_true
+    
+    def snapshot_val(self, dataset_info, type_image):
+        scores_predict = []
+
+        for idx in range(len(dataset_info)):
+            image = data_generator.load_image(dataset_info[idx]['path'], self.input_shape+[self.div], type_image)   
+            score_predict = self.model.predict(image[np.newaxis])[0]
+            scores_predict += [score_predict]
+        return scores_predict
+    
+    def snapshot_pre(self, submit,imagePath, type_image):
+        scores_predict = []
+        for name in tqdm(submit['Id']):
+            path = os.path.join(imagePath, name)
+            image = data_generator.load_image(path, self.input_shape+[self.div],type_image)
+            score_predict = self.model.predict(image[np.newaxis])[0]
+            scores_predict += [score_predict]
+        return score_predict
+
 
     def save(self, modeloutputpath):
         self.model.save(modeloutputpath)
