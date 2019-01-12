@@ -190,14 +190,14 @@ class inception_resnet_model:
             scores_predict += [score_predict]
         return scores_predict
     
-    def snapshot_pre(self, submit,imagePath, type_image):
+    def snapshot_pre(self, submit, imagePath, type_image):
         scores_predict = []
         for name in tqdm(submit['Id']):
             path = os.path.join(imagePath, name)
             image = data_generator.load_image(path, self.input_shape+[self.div],type_image)
             score_predict = self.model.predict(image[np.newaxis])[0]
             scores_predict += [score_predict]
-        return score_predict
+        return scores_predict
 
 
     def save(self, modeloutputpath):

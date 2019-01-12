@@ -28,6 +28,26 @@ def f1(y_true, y_pred):
     f1 = tf.where(tf.is_nan(f1), tf.zeros_like(f1), f1)
     return K.mean(f1)
 
+def f1_list(y_true, y_pred):
+    f1_ans = []
+    for i in range(len(y_true)):
+        # print ("y_true[i]",type(y_true[i]),type(y_true[i][0]),len(y_true[i]))
+        # print ('y_pred[i]',type(y_pred[i]),type(y_pred[i][0]),len(y_pred[i]))
+        # print (y_true[i])
+        # print (y_pred[i])
+        y_true_tmp = np.array(y_true[i], dtype=np.int16) 
+        y_pred_tmp = np.array(y_pred[i], dtype=np.int16) 
+        tp = np.sum(y_true_tmp*y_pred_tmp,axis=0)
+        fp = np.sum((1-y_true_tmp)*y_pred_tmp,axis=0)
+        fn = np.sum(y_true_tmp*(1-y_pred_tmp),axis=0)
+
+        p = tp / (tp + fp + 1e-10)
+        r = tp / (tp + fn + 1e-10)
+
+        f1 = 2*p*r / (p+r+1e-10)
+        f1_ans += [f1]
+    return np.mean(f1_ans)
+
 def f1_loss(y_true, y_pred):
     
     #y_pred = K.cast(K.greater(K.clip(y_pred, 0, 1), THRESHOLD), K.floatx())
