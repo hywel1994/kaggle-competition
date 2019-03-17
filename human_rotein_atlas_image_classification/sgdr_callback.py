@@ -34,7 +34,7 @@ class SGDRScheduler(Callback):
                  steps_per_epoch,
                  lr_decay=1,
                  cycle_length=10,
-                 mult_factor=2):
+                 mult_factor=1):
 
         self.min_lr = min_lr
         self.max_lr = max_lr
