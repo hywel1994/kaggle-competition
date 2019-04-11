@@ -1,0 +1,143 @@
+# ==================================================================
+# module list
+# ------------------------------------------------------------------
+# python        3.6    (apt)
+# torch         latest (git)
+# onnx          latest (pip)
+# pytorch       latest (pip)
+# tensorflow    latest (pip)
+# keras         latest (pip)
+
+# ==================================================================
+
+FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
+
+
+ADD ./source.list /etc/apt/
+copy ./pip.conf /etc/pip.conf
+
+RUN APT_INSTALL="apt-get install -y --no-install-recommends" && \
+    PIP_INSTALL="python -m pip --no-cache-dir install --upgrade" && \
+    GIT_CLONE="git clone --depth 10" && \
+
+    rm -rf /var/lib/apt/lists/* \
+           /etc/apt/sources.list.d/cuda.list \
+           /etc/apt/sources.list.d/nvidia-ml.list && \
+
+    apt-get update && \
+
+
+
+# ==================================================================
+# tools
+# ------------------------------------------------------------------
+
+    DEBIAN_FRONTEND=noninteractive $APT_INSTALL \
+        build-essential \
+        apt-utils \
+        ca-certificates \
+        wget \
+        git \
+        vim \
+        curl \
+        && \
+
+# ==================================================================
+# python
+# ------------------------------------------------------------------
+
+    DEBIAN_FRONTEND=noninteractive $APT_INSTALL \
+        software-properties-common \
+        && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive $APT_INSTALL \
+        python3.6 \
+        python3.6-dev \
+        python3-distutils-extra \
+        python3-pip \
+        && \
+    
+    ln -s /usr/bin/python3.6 /usr/local/bin/python3 && \
+    ln -s /usr/bin/python3.6 /usr/local/bin/python && \
+    
+
+    $PIP_INSTALL \
+        setuptools \
+        && \
+    $PIP_INSTALL \
+        numpy \
+        scipy \
+        pandas \
+        cloudpickle \
+        scikit-learn \
+        matplotlib \
+        Cython \
+        Pillow \
+        cleverhans \
+        opencv_python \
+        && \
+
+# ==================================================================
+# onnx
+# ------------------------------------------------------------------
+
+    DEBIAN_FRONTEND=noninteractive $APT_INSTALL \
+        protobuf-compiler \
+        libprotoc-dev \
+        && \
+
+# ==================================================================
+# pytorch
+# ------------------------------------------------------------------
+
+    $PIP_INSTALL \
+        future \
+        protobuf \
+        enum34 \
+        pyyaml \
+        typing \
+    	torchvision \
+        && \
+    $PIP_INSTALL \
+        https://download.pytorch.org/whl/cu100/torch-1.0.1.post2-cp36-cp36m-linux_x86_64.whl \
+        && \
+
+# ==================================================================
+# tensorflow
+# ------------------------------------------------------------------
+
+    $PIP_INSTALL \
+        tensorflow-gpu==1.13.1 \
+        && \
+
+
+# ==================================================================
+# keras
+# ------------------------------------------------------------------
+
+    $PIP_INSTALL \
+        h5py \
+        keras \
+        && \
+    
+
+# ==================================================================
+# config & cleanup
+# ------------------------------------------------------------------
+
+    ldconfig && \
+    apt-get clean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/* ~/*
+
+EXPOSE 6006
+
+RUN mkdir /competition
+WORKDIR /competition
+
+RUN mkdir ./models
+RUN curl -O  'http://alg-misc.cn-hangzhou.oss.aliyun-inc.com/ijcai2019_ai_security_competition/pretrained_models/inception_v1.tar.gz' && tar -xvf inception_v1.tar.gz -C ./models/
+RUN curl -O  'http://alg-misc.cn-hangzhou.oss.aliyun-inc.com/ijcai2019_ai_security_competition/pretrained_models/vgg_16.tar.gz' && tar -xvf vgg_16.tar.gz -C ./models/
+RUN curl -O  'http://alg-misc.cn-hangzhou.oss.aliyun-inc.com/ijcai2019_ai_security_competition/pretrained_models/resnet_v1_50.tar.gz' && tar -xvf resnet_v1_50.tar.gz -C ./models/
+RUN rm inception_v1.tar.gz vgg_16.tar.gz resnet_v1_50.tar.gz

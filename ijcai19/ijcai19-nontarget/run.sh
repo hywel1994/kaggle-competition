@@ -1,0 +1,4 @@
+INPUT_DIR=$1
+OUTPUT_DIR=$2
+
+./run_baseline2.sh ${INPUT_DIR} ${OUTPUT_DIR}
